@@ -25,7 +25,8 @@ def calculate_elevation_angle(ax, ay, az):
 
 def low_pass_filter(new_val, prev_val, alpha=0.9):
     # Simple low pass filter
-    return alpha * new_val + (1 - alpha) * prev_val
+    return new_val
+    # return alpha * new_val + (1 - alpha) * prev_val
 
 def process_data(json_data, buffers, angles, last_values):
     try:
@@ -62,7 +63,7 @@ last_values = {key: 0 for key in buffers.keys()}
 angles = {'elevation': []}
 
 HOST = '192.168.0.2'
-PORT = 6667
+PORT = 6669
 
 ball = basketball()
 
@@ -82,8 +83,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             json_obj += '}'
             print(json_obj)
             
-            if len(angles['elevation']) > 1 and angles['elevation'][-2] > 120 and angles['elevation'][-1] <= 120:
-                t = threading.Thread(target=ball.shoot, args=(int(buffers['ax'][-1]), int(buffers['ay'][-1]), int(buffers['az'][-1])))
+            if len(angles['elevation']) > 1 and angles['elevation'][-2] > 120 and angles['elevation'][-1] <= 120: # detect shooting
+                t = threading.Thread(target=ball.shoot, args=(int(buffers['ax'][-1]), int(buffers['ay'][-1]), int(buffers['az'][-1]))) # create a thread to start the animation
                 t.start()
 
             if process_data(json_obj, buffers, angles, last_values):
