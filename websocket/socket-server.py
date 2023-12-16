@@ -3,7 +3,7 @@ import json
 import matplotlib.pyplot as plt
 import math
 from time import sleep
-from canva import basketball
+from websocket.canva import basketball
 import threading
 
 
