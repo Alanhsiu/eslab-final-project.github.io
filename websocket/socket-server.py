@@ -10,6 +10,8 @@ from canva import basketball
 
 HOST = "192.168.0.2"
 PORT = 6666
+sio = socketio.SimpleClient()
+sio.connect("http://192.168.0.14:5328", transports=["websocket"])
 
 sio = socketio.SimpleClient()
 sio.connect("http://192.168.0.14:5328", transports=["websocket"])
@@ -104,6 +106,14 @@ def process_data_and_send_response(json_data, buffers, angles, last_values, conn
                 int(buffers["ay"][-1]),
                 int(buffers["az"][-1]),
             ),
+        )
+        sio.emit(
+            "shoot",
+            {
+                "ax": int(buffers["ax"][-1]),
+                "ay": int(buffers["ay"][-1]),
+                "az": int(buffers["az"][-1]),
+            },
         )
         print("start")
         t.start()
