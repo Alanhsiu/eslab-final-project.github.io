@@ -13,8 +13,8 @@ class basketball():
     """
     # 生成籃框和籃球架
     backboard = box(pos=vector(0, 3.5+heightadjust, center +1.2), size=vector(1.8, 1.2, 0.1), color=color.white)
-    hoop = ring(pos=vector(0, 3.05+heightadjust, backboard.pos.z+0.23+0.69), axis=vector(0, 0.01, 0), radius = 0.69, thickness=0.03, color=color.red)
-
+    hoop = ring(pos=vector(0, 3.05+heightadjust, backboard.pos.z+0.23), axis=vector(0, 0.01, 0), radius = 0.23, thickness=0.03, color=color.red)
+    hoop.pos.z += hoop.radius
     # generate the paint area
     paint1 = box(pos = vector(4.9/2-0.05, heightadjust,center+5.8/2), size = vector(0.1, 0.1, 5.8), color = color.red, opacity = 1)
     paint2 = box(pos = vector(-4.9/2+0.05, heightadjust,center+5.8/2), size = vector(0.1, 0.1, 5.8), color = color.red, opacity = 1)
@@ -28,15 +28,17 @@ class basketball():
 
     # 生成籃球
     basketball = sphere(pos=vector(0, 2.1+heightadjust, 2.9-0.12), radius=0.12, color=color.orange, make_trail=False, trail_color=color.white)
-    basketball.m = 0.0062 
+    basketball.m = 0.062 
 
 
     def shoot(self, ax = 0, ay = 0, az = 0):
         # initial position of the ball
         self.basketball.pos = vector(0, 1.9+self.heightadjust, 2.9-0.12)
-        v 
         # 球的初始速度和加速度
-        self.basketball.velocity = vector(ay*0.0003, az*0.004, ax*(-0.002))
+        # self.basketball.velocity = vector(0, 10, -10)
+        self.basketball.velocity = vector(0, 7, -3)
+        # self.basketball.velocity = vector(ay*0.0003, az*(-0.01), ax*(0.002))
+        self.basketball.velocity += vector(ay*0.001, az*(-0.001), ax*(0.001))
         g = vector(0, -9.8, 0)
 
         # parameters for the ball
@@ -59,9 +61,10 @@ class basketball():
             time += dt
             if time > maxtime:
                 time = 0
+                self.basketball.pos = vector(0, 1.9+self.heightadjust, 2.9-0.12)
                 return False
             
-            rate(1000)  # 1000 frames per second
+            rate(800)  # 1000 frames per second
             
             # hoop.pos points to the basketball
             ptrHoopToBall = norm(vector(self.basketball.pos.x, 0, self.basketball.pos.z) - vector(self.hoop.pos.x, 0, self.hoop.pos.z))*self.hoop.radius
@@ -70,17 +73,25 @@ class basketball():
             N_bounce = norm(ringtoball)
 
             # if the ball is near the courtside, stop
-            if self.basketball.pos.x > 3.75:
+            # if self.basketball.pos.x > 3.75:
+            #     time = 0
+            #     self.basketball.pos = vector(0, 1.9+self.heightadjust, 2.9-0.12)
+            #     return False
+            # elif self.basketball.pos.x < -3.75:
+            #     time = 0
+            #     self.basketball.pos = vector(0, 1.9+self.heightadjust, 2.9-0.12)
+            #     return False
+            # elif self.basketball.pos.z > 3.5:
+            #     time = 0
+            #     self.basketball.pos = vector(0, 1.9+self.heightadjust, 2.9-0.12)
+            #     return False
+            # elif self.basketball.pos.z < -3.5+self.basketball.radius:
+            #     time = 0
+            #     self.basketball.pos = vector(0, 1.9+self.heightadjust, 2.9-0.12)
+            #     return False
+            if self.basketball.pos.x > 3.75 or self.basketball.pos.x < -3.75 or self.basketball.pos.z > 3.5 or self.basketball.pos.z < -3.5+self.basketball.radius:
                 time = 0
-                return False
-            elif self.basketball.pos.x < -3.75:
-                time = 0
-                return False
-            elif self.basketball.pos.z > 3.5:
-                time = 0
-                return False
-            elif self.basketball.pos.z < -3.5+self.basketball.radius:
-                time = 0
+                self.basketball.pos = vector(0, 1.9+self.heightadjust, 2.9-0.12)
                 return False
            
             if self.basketball.velocity.x > 0:
@@ -107,7 +118,7 @@ class basketball():
                 self.basketball.velocity += N_bounce * 0.2
             
             # check if the ball pass through the hoop
-            if(self.basketball.pos.y <= self.hoop.pos.y+self.hoop.thickness and mag(vector(self.basketball.pos.x, 0, self.basketball.pos.z)-vector(self.hoop.pos.x, 0, self.hoop.pos.z)) <= self.hoop.radius-self.basketball.radius-self.hoop.thickness):
+            if(self.basketball.pos.y <= self.hoop.pos.y+0.1 and (self.basketball.pos.y >= self.hoop.pos.y-0.1) and mag(vector(self.basketball.pos.x, 0, self.basketball.pos.z)-vector(self.hoop.pos.x, 0, self.hoop.pos.z)) <= self.hoop.radius-self.basketball.radius-self.hoop.thickness) and (self.basketball.velocity.y <=0):
                 # display successful on the canvas
                 print("successful")
                 time = 0
