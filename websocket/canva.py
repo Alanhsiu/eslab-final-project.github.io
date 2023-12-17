@@ -34,7 +34,7 @@ class basketball():
     def shoot(self, ax = 0, ay = 0, az = 0):
         # initial position of the ball
         self.basketball.pos = vector(0, 1.9+self.heightadjust, 2.9-0.12)
-        
+        v 
         # 球的初始速度和加速度
         self.basketball.velocity = vector(ay*0.0003, az*0.004, ax*(-0.002))
         g = vector(0, -9.8, 0)
@@ -134,11 +134,6 @@ class basketball():
                 self.basketball.velocity.z *= -0.3
                 self.basketball.velocity.y *= 0.3
             
-            
-            
-            if (self.basketball.pos.z <= self.backboard.pos.z+0.05+self.basketball.radius+0.05) and (self.basketball.pos.y <= self.backboard.pos.y+self.backboard.size.y/2) and (self.basketball.pos.y >= self.backboard.pos.y-self.backboard.size.y/2) and self.basketball.velocity.z < 0:
-                self.basketball.velocity.z *= -1 
-                
             
             self.basketball.pos += self.basketball.velocity * dt
         # print(maxheight)
