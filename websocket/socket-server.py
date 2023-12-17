@@ -11,7 +11,7 @@ HOST = '192.168.0.2'
 PORT = 6666
 
 
-plt.ion() # Initialize plotting
+# plt.ion() # Initialize plotting
 fig, axs = plt.subplots(2, 1, figsize=(10, 10)) # 2 subplots
 
 def plot_acc_data(ax, data_x, data_y, data_z, label, ylim):
@@ -84,6 +84,24 @@ angles = {'elevation': []}
 
 ball = basketball()
 
+def process_data_and_send_response(json_data, buffers, angles, last_values, conn):
+    if process_data(json_data, buffers, angles, last_values):
+        t = ThreadWithReturnValue(target=ball.shoot, args=(int(buffers['ax'][-1]), int(buffers['ay'][-1]), int(buffers['az'][-1])))
+        print("start")
+        t.start()
+        print("end")
+        result = t.join()  
+        print(result)
+        
+        if result:
+            conn.sendall("success".encode('utf-8'))
+            print("send success")
+        else:
+            conn.sendall("fail".encode('utf-8'))
+            print("send fail")
+    else:
+        conn.sendall("fail".encode('utf-8'))
+
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind((HOST, PORT))
@@ -120,18 +138,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
                         print(json_obj_str)
                         
-                        # if len(angles['elevation']) > 1 and angles['elevation'][-2] > 120 and angles['elevation'][-1] <= 120: # detect shooting
-                        if process_data(json_obj_str, buffers, angles, last_values):
-                            t = ThreadWithReturnValue(target=ball.shoot, args=(int(buffers['ax'][-1]), int(buffers['ay'][-1]), int(buffers['az'][-1]))) # create a thread to start the animation
-                            t.start()
-                            result = t.join()
-                            print("Ball shoot returned:", result)
-
-                            # Plotting acceleration
-                            plot_acc_data(axs[0], buffers['ax'], buffers['ay'], buffers['az'], 'Acceleration', ylim=(-2000, 2000))
-                            # Plotting the elevation angle
-                            plot_elevation_angle(axs[1], angles['elevation'], 'Elevation Angle', ylim=(0, 180))
-                            plt.pause(0.001)
+                        process_data_and_send_response(json_obj_str, buffers, angles, last_values, conn)
+                        # plot_acc_data(axs[0], buffers['ax'], buffers['ay'], buffers['az'], 'Acceleration', ylim=(-2000, 2000))
+                        # plot_elevation_angle(axs[1], angles['elevation'], 'Elevation Angle', ylim=(0, 180))
+                        # plt.pause(0.001)
                 
                 except socket.timeout:
                     if time.time() - last_received_time > 3:  # timeout_period set to 3 seconds

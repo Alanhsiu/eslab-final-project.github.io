@@ -1,4 +1,5 @@
 from vpython import *
+import time
 
 class basketball():
     # 創建畫布
@@ -47,8 +48,20 @@ class basketball():
         # 更新球的運動
         dt = 0.001  # 時間步長
         maxheight = 0
+        
+        # if exceed the max time limit, stop
+        maxtime = 3 # seconds
+        time = 0
+        
         while True:
-            rate(1000)  # 控制動畫更新速度
+            
+            # record the time
+            time += dt
+            if time > maxtime:
+                time = 0
+                return False
+            
+            rate(1000)  # 1000 frames per second
             self.basketball.make_trail = False
            
             if self.basketball.velocity.x > 0:
@@ -74,6 +87,7 @@ class basketball():
             if(self.basketball.pos.y <= self.hoop.pos.y and mag(self.basketball.pos - self.hoop.pos) <= self.hoop.radius-self.basketball.radius):
                 # display successful on the canvas
                 print("successful")
+                time = 0
                 return True
             # else:
             #     if(mag(self.basketball.pos - hop))
@@ -98,16 +112,16 @@ class basketball():
             
             # if the ball is near the courtside, stop
             if self.basketball.pos.x > 3.75:
-                
+                time = 0
                 return False
             elif self.basketball.pos.x < -3.75:
-              
+                time = 0
                 return False
             elif self.basketball.pos.z > 3.5:
-              
+                time = 0
                 return False
             elif self.basketball.pos.z < -3.5+self.basketball.radius:
-                
+                time = 0
                 return False
             
             
