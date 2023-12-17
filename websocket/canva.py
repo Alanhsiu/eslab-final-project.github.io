@@ -74,7 +74,7 @@ class basketball():
             if(self.basketball.pos.y <= self.hoop.pos.y and mag(self.basketball.pos - self.hoop.pos) <= self.hoop.radius-self.basketball.radius):
                 # display successful on the canvas
                 print("successful")
-                break
+                return True
             # else:
             #     if(mag(self.basketball.pos - hop))
             
@@ -99,16 +99,16 @@ class basketball():
             # if the ball is near the courtside, stop
             if self.basketball.pos.x > 3.75:
                 
-                break
+                return False
             elif self.basketball.pos.x < -3.75:
               
-                break
+                return False
             elif self.basketball.pos.z > 3.5:
               
-                break
+                return False
             elif self.basketball.pos.z < -3.5+self.basketball.radius:
                 
-                break
+                return False
             
             
             if (self.basketball.pos.z <= self.backboard.pos.z+0.05+self.basketball.radius+0.05) and (self.basketball.pos.y <= self.backboard.pos.y+self.backboard.size.y/2) and (self.basketball.pos.y >= self.backboard.pos.y-self.backboard.size.y/2) and self.basketball.velocity.z < 0:
