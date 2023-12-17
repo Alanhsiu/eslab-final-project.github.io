@@ -27,7 +27,7 @@ class basketball():
     pillar = cylinder(pos=vector(0, heightadjust, backboard.pos.z-0.2), axis = vector(0, 3.3,0), radius = 0.2, color = color.cyan)
 
     # 生成籃球
-    basketball = sphere(pos=vector(0, 2.1+heightadjust, 2.9-0.12), radius=0.12, color=color.orange, make_trail=True, trail_color=color.white)
+    basketball = sphere(pos=vector(0, 2.1+heightadjust, 2.9-0.12), radius=0.12, color=color.orange, make_trail=False, trail_color=color.white)
     basketball.m = 0.0062 
 
 
@@ -62,7 +62,26 @@ class basketball():
                 return False
             
             rate(1000)  # 1000 frames per second
-            self.basketball.make_trail = False
+            
+            # hoop.pos points to the basketball
+            ptrHoopToBall = norm(vector(self.basketball.pos.x, 0, self.basketball.pos.z) - vector(self.hoop.pos.x, 0, self.hoop.pos.z))*self.hoop.radius
+            ringOfhoop = self.hoop.pos + ptrHoopToBall
+            ringtoball = self.basketball.pos - ringOfhoop
+            N_bounce = norm(ringtoball)
+
+            # if the ball is near the courtside, stop
+            if self.basketball.pos.x > 3.75:
+                time = 0
+                return False
+            elif self.basketball.pos.x < -3.75:
+                time = 0
+                return False
+            elif self.basketball.pos.z > 3.5:
+                time = 0
+                return False
+            elif self.basketball.pos.z < -3.5+self.basketball.radius:
+                time = 0
+                return False
            
             if self.basketball.velocity.x > 0:
                 f_x = -k*(self.basketball.velocity.x**2)
@@ -83,8 +102,12 @@ class basketball():
             ay_f = f_y/self.basketball.m
             az_f = f_z/self.basketball.m
             
+            # start to check if the ball is bounced into the hoop
+            if(mag(ringtoball) <= self.hoop.thickness + self.basketball.radius):
+                self.basketball.velocity += N_bounce * 0.2
             
-            if(self.basketball.pos.y <= self.hoop.pos.y and mag(self.basketball.pos - self.hoop.pos) <= self.hoop.radius-self.basketball.radius):
+            # check if the ball pass through the hoop
+            if(self.basketball.pos.y <= self.hoop.pos.y+self.hoop.thickness and mag(vector(self.basketball.pos.x, 0, self.basketball.pos.z)-vector(self.hoop.pos.x, 0, self.hoop.pos.z)) <= self.hoop.radius-self.basketball.radius-self.hoop.thickness):
                 # display successful on the canvas
                 print("successful")
                 time = 0
@@ -92,7 +115,6 @@ class basketball():
             # else:
             #     if(mag(self.basketball.pos - hop))
             
-            self.basketball.pos += self.basketball.velocity * dt
             if(self.basketball.pos.y > maxheight):
                 maxheight = self.basketball.pos.y
                 
@@ -102,33 +124,23 @@ class basketball():
             # self.basketball.velocity.y += ay_f*dt
             # self.basketball.velocity.z += az_f*dt
             
-            # 如果球碰到地板，反彈
+            # if the ball is bumped into the ground, bounce
             if self.basketball.pos.y < self.basketball.radius+self.heightadjust and self.basketball.velocity.y < 0:
-                self.basketball.velocity.y *= -1
+                self.basketball.velocity.y *= -0.5
 
             
-            # if basketball.pos.z >= backboard.pos.z:
-            #     basketball.velocity.z == 0
+            # if the ball is bumped into the backboard, bounce
+            if(self.basketball.pos.z <= self.backboard.pos.z+0.05+self.basketball.radius) and (self.basketball.pos.z >= self.backboard.pos.z - 0.05-self.basketball.radius) and (self.basketball.pos.y <= self.backboard.pos.y+self.backboard.size.y/2) and (self.basketball.pos.y >= self.backboard.pos.y - self.backboard.size.y/2) and self.basketball.velocity.z < 0:
+                self.basketball.velocity.z *= -0.3
+                self.basketball.velocity.y *= 0.3
             
-            # if the ball is near the courtside, stop
-            if self.basketball.pos.x > 3.75:
-                time = 0
-                return False
-            elif self.basketball.pos.x < -3.75:
-                time = 0
-                return False
-            elif self.basketball.pos.z > 3.5:
-                time = 0
-                return False
-            elif self.basketball.pos.z < -3.5+self.basketball.radius:
-                time = 0
-                return False
             
             
             if (self.basketball.pos.z <= self.backboard.pos.z+0.05+self.basketball.radius+0.05) and (self.basketball.pos.y <= self.backboard.pos.y+self.backboard.size.y/2) and (self.basketball.pos.y >= self.backboard.pos.y-self.backboard.size.y/2) and self.basketball.velocity.z < 0:
                 self.basketball.velocity.z *= -1 
                 
             
+            self.basketball.pos += self.basketball.velocity * dt
         # print(maxheight)
             
             
