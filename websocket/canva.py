@@ -135,9 +135,6 @@ class basketball():
                 self.basketball.velocity.y *= 0.3
             
             
-            
-            if (self.basketball.pos.z <= self.backboard.pos.z+0.05+self.basketball.radius+0.05) and (self.basketball.pos.y <= self.backboard.pos.y+self.backboard.size.y/2) and (self.basketball.pos.y >= self.backboard.pos.y-self.backboard.size.y/2) and self.basketball.velocity.z < 0:
-                self.basketball.velocity.z *= -1 
                 
             
             self.basketball.pos += self.basketball.velocity * dt
