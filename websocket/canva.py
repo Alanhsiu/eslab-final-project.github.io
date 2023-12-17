@@ -146,6 +146,11 @@ class basketball():
                 self.basketball.velocity.y *= 0.3
             
             
+<<<<<<< HEAD
+=======
+                
+            
+>>>>>>> 88518b075ed90da988a08975e2073a93a0cfdac6
             self.basketball.pos += self.basketball.velocity * dt
         # print(maxheight)
             
