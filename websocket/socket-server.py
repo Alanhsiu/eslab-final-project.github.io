@@ -137,10 +137,18 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                                 continue
                             elif json_obj.get("level") == "2":
                                 print("2-point shot")
-                                ball.set_shoot_position(0)
+                                # ball.set_shoot_position(0)
+                                t = threading.Thread(target=ball.set_shoot_position, args=(0,))
+                                t.start()
+                                t.join()
+                                continue
                             elif json_obj.get("level") == "3":
                                 print("3-point shot")
-                                ball.set_shoot_position(1)
+                                # ball.set_shoot_position(1)
+                                t = threading.Thread(target=ball.set_shoot_position, args=(1,))
+                                t.start()
+                                t.join()
+                                continue
                         except json.JSONDecodeError:
                             print("Invalid JSON")
                             continue

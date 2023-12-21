@@ -34,7 +34,7 @@ class basketball():
     def shoot(self, ax = 0, ay = 0, az = 0):
         # initial position of the ball
         self.basketball.velocity = vector(0, 7, -3)
-        self.basketball.velocity += vector(ay*0.001, az*(-0.001), ax*(0.001))
+        self.basketball.velocity += vector(ay*0.001, az*(-0.002), ax*(0.01))
         g = vector(0, -9.8, 0)
 
         dt = 0.001  # time interval
@@ -63,7 +63,7 @@ class basketball():
             
             # check if the ball pass through the hoop
             if(self.basketball.pos.y <= self.hoop.pos.y+0.1 and (self.basketball.pos.y >= self.hoop.pos.y-0.1) and mag(vector(self.basketball.pos.x, 0, self.basketball.pos.z)-vector(self.hoop.pos.x, 0, self.hoop.pos.z)) <= self.hoop.radius-self.basketball.radius-self.hoop.thickness) and (self.basketball.velocity.y <=0):
-                # TODO: display "2-point shot" on the canvas
+                # TODO: display "2-point shot" or "3-point shot" on the canvas
                 time = 0
                 return True
             
