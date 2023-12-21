@@ -1,5 +1,4 @@
-import { useExternalLink, useExternalScript } from "/lib/hooks/useScript";
-
+import useSetting from "/lib/hooks/store/setting";
 import Simulation from "../../components/simulation";
 import { useEffect, useRef, useState } from "react";
 import "@tensorflow/tfjs-backend-webgl";
@@ -15,36 +14,37 @@ tfjsWasm.setWasmPaths(
   `https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm`
 );
 
+// Format the remaining time (e.g., “00:05:10” for 5 minutes and 10 seconds)
+const formatTime = (timeInSeconds) => {
+  const minutes = Math.floor(timeInSeconds / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (timeInSeconds % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
+};
+
 export default function HandPoseDetection() {
   const detectorRef = useRef();
   const videoRef = useRef();
   const [ctx, setCtx] = useState();
-  const [velocity, setVelocity] = useState([-0.05, 10, -3]);
-  const [fingerDetection, setFingerDetection] = useState(null);
+  const [acceleration, setAcceleration] = useState([0, 0, 0]);
+  const [fingerDetection, setFingerDetection] = useState(false);
   const [bucket, setBucket] = useState(false); // * State for ball in the bucket
   const [floor, setFloor] = useState(false); // * State for ball touching the floor
   const [seed, setSeed] = useState(Math.random());
-  const link1_state = useExternalLink("https://www.glowscript.org/css/ide.css");
-  const link2_state = useExternalLink(
-    "https://www.glowscript.org/css/redmond/2.1/jquery-ui.custom.css"
-  );
-  const script1_state = useExternalScript(
-    "https://www.glowscript.org/lib/jquery/2.1/jquery.min.js"
-  );
-  const script3_state = useExternalScript(
-    "https://www.glowscript.org/package/glow.3.2.min.js"
-  );
-  const script2_state = useExternalScript(
-    "https://www.glowscript.org/lib/jquery/2.1/jquery-ui.custom.min.js"
-  );
+  const { handedness, mode } = useSetting((state) => ({
+    handedness: state.handedness,
+    mode: state.mode,
+  }));
 
-  const gameState = useGame(
-    [link1_state, link2_state, script1_state, script2_state, script3_state],
+  const [gameState, score, seconds] = useGame(
     fingerDetection,
     floor,
     setFloor,
-    setVelocity,
-    setSeed
+    setAcceleration,
+    setSeed,
+    bucket,
+    setBucket
   );
 
   useEffect(() => {
@@ -60,29 +60,16 @@ export default function HandPoseDetection() {
   }, []);
 
   useEffect(() => {
-    console.log(bucket);
-    if (bucket) {
-      // Send http request to backend, score + 1
-      var body = {
-        score: true,
-      };
-
-      axios
-        .post("/api/score", body)
-        .then(function (response) {
-          console.log(response);
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-      setBucket(false);
-    }
-  }, [bucket]);
+    console.log(handedness, mode);
+  }, [handedness, mode]);
 
   useAnimationFrame(async (delta) => {
-    const hands = await detectorRef.current.estimateHands(video, {
+    let hands = await detectorRef.current.estimateHands(video, {
       flipHorizontal: false,
     });
+    hands = hands.filter(
+      (hand) => hand.handedness.toLowerCase() === handedness
+    );
     if (hands.length > 0) {
       // TODO: add right/left hand
       const estimatedGestures = GE.estimate(
@@ -94,6 +81,7 @@ export default function HandPoseDetection() {
         estimatedGestures.gestures[0].score >= 9
       ) {
         setFingerDetection(true);
+        console.log("gesture detected");
       } else {
         // * If wrong gesture, set fingerDetection to false
         setFingerDetection(false);
@@ -125,46 +113,59 @@ export default function HandPoseDetection() {
         <div className="flex flex-col items-center justify-center flex-grow border-4 border-blue-500">
           {gameState === "ready" || gameState === "simulation" ? (
             <Simulation
-              velocity={velocity}
+              acceleration={acceleration}
               key={seed}
               isStatic={gameState === "ready"}
               setBucket={setBucket}
               setFloor={setFloor}
+              mode={mode}
             />
           ) : (
             <></>
           )}
         </div>
-        {/* Enter velocity */}
+        {/* Enter acceleration */}
         <div className="flex-grow-0 p-4 border-4 border-blue-500">
           <label className="block">
-            <span className="text-gray-700">Velocity</span>
+            <span className="text-gray-700">acceleration</span>
             <input
               type="number"
               className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-              placeholder="Enter velocity"
-              value={velocity[0]}
+              placeholder="Enter acceleration"
+              value={acceleration[0]}
               onChange={(e) =>
-                setVelocity([Number(e.target.value), velocity[1], velocity[2]])
+                setAcceleration([
+                  Number(e.target.value),
+                  acceleration[1],
+                  acceleration[2],
+                ])
               }
             />
 
             <input
               type="number"
               className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-              placeholder="Enter velocity"
-              value={velocity[1]}
+              placeholder="Enter acceleration"
+              value={acceleration[1]}
               onChange={(e) =>
-                setVelocity([velocity[0], Number(e.target.value), velocity[2]])
+                setAcceleration([
+                  acceleration[0],
+                  Number(e.target.value),
+                  acceleration[2],
+                ])
               }
             />
             <input
               type="number"
               className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-              placeholder="Enter velocity"
-              value={velocity[2]}
+              placeholder="Enter acceleration"
+              value={acceleration[2]}
               onChange={(e) =>
-                setVelocity([velocity[0], velocity[1], Number(e.target.value)])
+                setAcceleration([
+                  acceleration[0],
+                  acceleration[1],
+                  Number(e.target.value),
+                ])
               }
             />
           </label>
@@ -182,10 +183,10 @@ export default function HandPoseDetection() {
       <div className="flex flex-col w-1/4 p-4 space-y-4">
         <div className="p-4 border-4 border-blue-500">
           <h1 className="inline-block p-2 text-2xl font-bold text-white bg-blue-700 border-2 border-blue-500 rounded-lg shadow-lg">
-            Score: 100
+            Score: {score}
           </h1>
           <div className="inline-block p-2 mt-4 font-mono text-lg text-white bg-blue-700 border-2 border-blue-500 rounded-lg shadow-lg">
-            <p>Time Remaining: 3:44</p>
+            <p>Time Remaining: {formatTime(seconds)}</p>
           </div>
         </div>
         <div className="flex-grow" />

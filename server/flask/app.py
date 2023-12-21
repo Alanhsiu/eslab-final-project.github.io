@@ -1,15 +1,39 @@
 from flask_cors import CORS
-from flask import Flask, render_template
+from flask import Flask, request, jsonify
 from flask_socketio import SocketIO
-import time
 
 app = Flask(__name__)
-socketio = SocketIO(
-    app,
-    cors_allowed_origins="*",
-)
+app.config["SECRET_KEY"] = "secret!"
+socketio = SocketIO(app, cors_allowed_origins=["http://127.0.0.1:80"])
 CORS(app, resources={r"/*": {"origins": "*"}})
 wait_for_velocity = False
+
+
+@app.route("/")
+def hello():
+    return "Hello World!"
+
+
+@app.route("/cache-me")
+def cache():
+    return "nginx will cache this response"
+
+
+@app.route("/info")
+def info():
+    resp = {
+        "connecting_ip": request.headers["X-Real-IP"],
+        "proxy_ip": request.headers["X-Forwarded-For"],
+        "host": request.headers["Host"],
+        "user-agent": request.headers["User-Agent"],
+    }
+
+    return jsonify(resp)
+
+
+@app.route("/flask-health-check")
+def flask_health_check():
+    return "success"
 
 
 @app.route("/score", methods=["GET"])
@@ -59,5 +83,5 @@ def updateVelocity(data):
         socketio.emit("velocity", velocity)
 
 
-if __name__ == "__main__":
-    socketio.run(app, use_reloader=False, log_output=False, port=5328, host="127.0.0.1")
+# if __name__ == "__main__":
+#     socketio.run(app, use_reloader=True, log_output=False, port=5328, host="127.0.0.1")

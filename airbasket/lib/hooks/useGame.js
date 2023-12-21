@@ -3,17 +3,20 @@ import io from "socket.io-client";
 
 import axios from "axios";
 export const useGame = (
-  externalStates,
   isGesture,
   floor,
   setFloor,
-  setVelocity,
-  restart
+  setAcceleration,
+  restart,
+  bucket,
+  setBucket
 ) => {
-  const [gameState, setGameState] = useState("init");
+  const [gameState, setGameState] = useState("ready");
+  const [seconds, setSeconds] = useState(40);
+  const [score, setScore] = useState(0);
 
   useEffect(() => {
-    const socket = io("http://192.168.0.14:5328");
+    const socket = io("wss://f8ef-140-112-248-7.ngrok-free.app");
     socket.on("connect", () => {
       console.log("connected");
     });
@@ -22,38 +25,34 @@ export const useGame = (
     });
     socket.on("velocity", (data) => {
       console.log(data);
-      setVelocity(data);
+      setAcceleration(data.map((v) => Number(v)));
       setGameState("simulation");
       restart(Math.random());
     });
+
+    // * send request for first velocity
+    axios
+      .get("/api/velocity", {
+        headers: { "ngrok-skip-browser-warning": "true" },
+      })
+      .then(function (response) {
+        //   * from ready -> simulation
+        setGameState("simulation");
+        restart(Math.random());
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   }, []);
-  useEffect(() => {
-    if (
-      gameState === "loading" &&
-      externalStates.every((state) => state === "ready")
-    ) {
-      setGameState("ready");
-      axios
-        .get("/api/velocity")
-        .then(function (response) {
-          //   * from ready -> simulation
-          setVelocity(response.data);
-          setGameState("simulation");
-          restart(Math.random());
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-    } else if (gameState === "init") {
-      setGameState("loading");
-    }
-  }, [externalStates]);
 
   //  * from simulation -> ready
   useEffect(() => {
-    if (gameState === "simulation" && isGesture && floor) {
+    if (isGesture && floor && gameState === "simulation") {
+      console.log("isGesture", isGesture);
       setGameState("ready");
       setFloor(false);
+      setBucket(false);
+
       restart(Math.random());
       //  * Send http request to backend, asking for ball velocity
       axios.get("/api/velocity").catch(function (error) {
@@ -63,8 +62,50 @@ export const useGame = (
   }, [isGesture, floor]);
 
   useEffect(() => {
+    if (bucket) {
+      if (bucket && gameState === "simulation") {
+        console.log("send request");
+        axios
+          .get("/api/score")
+          .then(function (response) {
+            //   * from ready -> simulation
+            console.log(response);
+            setScore(score + 1);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      }
+    }
+  }, [bucket]);
+
+  useEffect(() => {
+    // Exit early if countdown is finished
+    if (seconds <= 0) {
+      axios
+        .get("/api/expire")
+        .then(function (response) {
+          //   * from ready -> simulation
+          console.log("expire");
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      return;
+    }
+
+    // Set up the timer
+    const timer = setInterval(() => {
+      setSeconds((prevSeconds) => prevSeconds - 1);
+    }, 1000);
+
+    // Clean up the timer
+    return () => clearInterval(timer);
+  }, [seconds]);
+
+  useEffect(() => {
     console.log("gameState", gameState);
   }, [gameState]);
 
-  return gameState;
+  return [gameState, score, seconds];
 };
