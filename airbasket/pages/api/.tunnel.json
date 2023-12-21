@@ -1,0 +1,11 @@
+{
+	"localServices": [
+		{
+			"localTunnelProxyServerPortNumber": 61444,
+			"relativeDirpath": "",
+			"tunnelInstanceCids": [
+				"jzkg4toybwe4yohdlgt8upvb"
+			]
+		}
+	]
+}

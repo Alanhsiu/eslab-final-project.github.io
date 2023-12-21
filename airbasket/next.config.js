@@ -9,7 +9,7 @@ module.exports = {
     return [
       {
         source: "/api/:path*",
-        destination: "https://f8ef-140-112-248-7.ngrok-free.app/:path*", // Proxy to Backend
+        destination: "https://mighty-numbers-bet.tunnelapp.dev/:path*", // Proxy to Backend
       },
     ];
   },

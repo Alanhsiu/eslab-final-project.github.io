@@ -16,7 +16,7 @@ export const useGame = (
   const [score, setScore] = useState(0);
 
   useEffect(() => {
-    const socket = io("wss://f8ef-140-112-248-7.ngrok-free.app");
+    const socket = io("https://mighty-numbers-bet.tunnelapp.dev");
     socket.on("connect", () => {
       console.log("connected");
     });
