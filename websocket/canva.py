@@ -32,8 +32,19 @@ class basketball():
 
   
     # define the distance between the ball and the hoop
-    # dist_2_point = 4.57  # width
-    # dist_3_point = 7.24 # length
+    dist_2_point = z_boarder+paintlength+boardposition
+    dist_3_point = 7.24+hoop.pos.z
+    
+    # 三分線的距離
+    dist_3_point = 7.5 + hoop.pos.z
+
+    # 繪製三分線
+    three_point_line = curve(color=color.red, radius=0.08)
+    for angle in range(0, 180):  # 繪製半圓形的三分線
+        x = 7.24 * cos(radians(angle))
+        y = heightadjust
+        z = 2 + 7.24 * sin(radians(angle)) + z_boarder
+        three_point_line.append(vector(x, y, z))
     
     # generate the basketball
     shootheight = 1.9
@@ -41,11 +52,12 @@ class basketball():
     basketball = sphere(pos=vector(0, shootheight+heightadjust,  freethrowline.pos.z), radius=ball_radius, color=color.orange, make_trail=False, trail_color=color.white)
     
     def set_shoot_position(self, level): # level 0: 2-point shot, level 1: 3-point shot
-        dist = self.paintwidth if level == 0 else self.paintlength
+        dist = self.dist_2_point if level == 0 else self.dist_3_point
         self.basketball.pos = vector(0, self.shootheight+self.heightadjust, dist-self.ball_radius)
     
     def shoot(self, ax = 0, ay = 0, az = 0):
         # initial position of the ball
+        self.set_shoot_position(level=0)
         self.basketball.velocity = vector(0, 7, -3)
         self.basketball.velocity += vector(ay*0.001, az*(-0.002), ax*(0.01))
         g = vector(0, -9.8, 0)
