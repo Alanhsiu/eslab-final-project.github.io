@@ -10,11 +10,8 @@ from canva import basketball
 
 HOST = "192.168.0.2"
 PORT = 6666
-sio = socketio.SimpleClient()
-sio.connect("http://192.168.0.14:5328", transports=["websocket"])
-
-sio = socketio.SimpleClient()
-sio.connect("http://192.168.0.14:5328", transports=["websocket"])
+# sio = socketio.SimpleClient()
+# sio.connect("http://192.168.0.14:5328", transports=["websocket"])
 
 # plt.ion() # Initialize plotting
 fig, axs = plt.subplots(2, 1, figsize=(10, 10))  # 2 subplots
@@ -45,7 +42,7 @@ def low_pass_filter(new_val, prev_val, alpha=0.9):
     return alpha * new_val + (1 - alpha) * prev_val
 
 
-def process_data(json_data, buffers, angles, last_values):
+def process_data(json_data, buffers, last_values):
     try:
         obj = json.loads(json_data)
         # Update data buffers with low pass filtering
@@ -56,15 +53,8 @@ def process_data(json_data, buffers, angles, last_values):
             last_values[key] = filtered_value
             if len(buffers[key]) > 50:
                 buffers[key].pop(0)
-
-        ax, ay, az = last_values["ax"], last_values["ay"], last_values["az"]
-        elevation_angle = calculate_elevation_angle(ax, ay, az)
-        # elevation_angle = last_values['d']
-        angles["elevation"].append(elevation_angle)
-        if len(angles["elevation"]) > 50:
-            angles["elevation"].pop(0)
-
         return True
+    
     except json.JSONDecodeError:
         return False
 
@@ -86,33 +76,31 @@ class ThreadWithReturnValue(threading.Thread):
 
 
 # Data buffers
-buffers = {"ax": [], "ay": [], "az": []}
+buffers = {"ax": [], "ay": [], "az": [], "le": []}
 
 # Last values for low pass filter initialization
 last_values = {key: 0 for key in buffers.keys()}
 
 # Angles buffer for storing only the elevation angle
-angles = {"elevation": []}
+# angles = {"elevation": []}
 
 ball = basketball()
 
 
-def process_data_and_send_response(json_data, buffers, angles, last_values, conn):
-    if process_data(json_data, buffers, angles, last_values):
-        t = ThreadWithReturnValue(target=ball.shoot, args=(int(buffers['ax'][-1]), int(buffers['ay'][-1]), int(buffers['az'][-1])))
+def process_data_and_send_response(json_data, buffers, last_values, conn):
+    if process_data(json_data, buffers, last_values):
+        t = ThreadWithReturnValue(target=ball.shoot, args=(int(buffers['ax'][-1]), int(buffers['ay'][-1]), int(buffers['az'][-1]))) 
         # sio.emit("shoot", {"ax": int(buffers['ax'][-1]), "ay": int(buffers['ay'][-1]), "az": int(buffers['az'][-1])})
-        print("start")
         t.start()
-        print("end")
         result = t.join()
         print(result)
 
         if result:
             conn.sendall("success".encode("utf-8"))
-            print("send success")
+            print("success sent")
         else:
             conn.sendall("fail".encode("utf-8"))
-            print("send fail")
+            print("fail sent")
     else:
         conn.sendall("fail".encode("utf-8"))
 
@@ -147,6 +135,12 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                             if json_obj.get("type") == "heartbeat":
                                 print("Heartbeat received")
                                 continue
+                            elif json_obj.get("level") == "2":
+                                print("2-point shot")
+                                ball.set_shoot_position(0)
+                            elif json_obj.get("level") == "3":
+                                print("3-point shot")
+                                ball.set_shoot_position(1)
                         except json.JSONDecodeError:
                             print("Invalid JSON")
                             continue
@@ -154,7 +148,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                         print(json_obj_str)
 
                         process_data_and_send_response(
-                            json_obj_str, buffers, angles, last_values, conn
+                            json_obj_str, buffers, last_values, conn
                         )
                         # plot_acc_data(axs[0], buffers['ax'], buffers['ay'], buffers['az'], 'Acceleration', ylim=(-2000, 2000))
                         # plot_elevation_angle(axs[1], angles['elevation'], 'Elevation Angle', ylim=(0, 180))
