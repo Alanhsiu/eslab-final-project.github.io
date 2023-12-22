@@ -1,4 +1,4 @@
-# eslab-final-project
+# Air Basketball
 2023 Fall NTU embedded system lab final project
 
 ## Project Description
