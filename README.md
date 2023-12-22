@@ -51,6 +51,7 @@ Air basketball game developed on STM32L4 Discovery Kit IoT Node.
 - detail
   - use `s.setsockopt` to reuse the address
   - use `s.settimeout` to set the timeout
+  - use **heartbeat** to check if the connection is still alive
 
 #### Digital Signal Processing (DSP)
 - description
@@ -76,7 +77,7 @@ Air basketball game developed on STM32L4 Discovery Kit IoT Node.
 - purpose
   - synchronize the tasks
 - scenario
-  - use to change the led to indicate the difficulty level
+  - use to change led modes to indicate the difficulty level
 
 #### PWM (Pulse Width Modulation)
 - description
@@ -96,4 +97,4 @@ Air basketball game developed on STM32L4 Discovery Kit IoT Node.
   - run the tasks concurrently
 - scenario
   - simulate the shooting process
-  - 
+  - set the position of the ball
