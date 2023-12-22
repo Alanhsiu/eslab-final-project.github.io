@@ -34,10 +34,66 @@ Air basketball game developed on STM32L4 Discovery Kit IoT Node.
 
 
 ## Technologies Used
-- Websocket: communication between STM32 and the server
-- BSP (Board Support Package): collect accelerometer data
-- Semaphores: control the access of shared resources (LEDs)
-- Low Pass Filter: filter out the noise of accelerometer data
 
+#### Websocket
+- description
+  - use TCP/IP protocol
+  - use socket/socketio library
+- purpose
+  - communication between STM32 and the server
+  - communication between the server and the web server
+- scenario
+  - STM32 sends the accelerometer data to the server
+  - STM32 receives the result of the simulation from the server
+  - STM32 sends the difficulty level to the server
+  - STM32 sends heart beat to the server
+  - The server sends the data to the web server
+- detail
+  - use `s.setsockopt` to reuse the address
+  - use `s.settimeout` to set the timeout
 
+#### Digital Signal Processing (DSP)
+- description
+  - use CMSIS-DSP library
+  - use `arm_fir_f32` function
+- purpose
+  - filter out the noise
+- scenario
+  - get the accelerometer data
+- detail
+  - use the specific low pass filter, which Nyquist frequency is 5Hz and Cutoff frequency is 2.5Hz
 
+#### BSP (Board Support Package)
+- description
+  - use BSP library
+  - use `BSP_ACCELERO_AccGetXYZ` function
+- purpose
+  - use the sensors on the board to get the accelerometer data
+- scenario
+  - collect the accelerometer data
+
+#### Semaphores
+- purpose
+  - synchronize the tasks
+- scenario
+  - use to change the led to indicate the difficulty level
+
+#### PWM (Pulse Width Modulation)
+- description
+  - use PWM library
+  - use `pwmout.period` and `pwmout.write` function
+- purpose
+  - control the buzzer
+- scenario
+  - use to notify the player if goal or not
+  - one long beep for goal, two short beeps for not goal
+
+#### Multi-threading
+- description
+  - use Thread library
+  - use `Thread` function
+- purpose
+  - run the tasks concurrently
+- scenario
+  - simulate the shooting process
+  - 

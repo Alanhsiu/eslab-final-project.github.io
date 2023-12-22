@@ -10,8 +10,9 @@ from canva import basketball
 
 HOST = "192.168.0.2"
 PORT = 6666
-# sio = socketio.SimpleClient()
-# sio.connect("http://192.168.0.14:5328", transports=["websocket"])
+# print("Socketio", socketio)
+sio = socketio.SimpleClient()
+sio.connect("https://mighty-numbers-bet.tunnelapp.dev", transports=["websocket"])
 
 # plt.ion() # Initialize plotting
 fig, axs = plt.subplots(2, 1, figsize=(10, 10))  # 2 subplots
@@ -90,7 +91,7 @@ ball = basketball()
 def process_data_and_send_response(json_data, buffers, last_values, conn):
     if process_data(json_data, buffers, last_values):
         t = ThreadWithReturnValue(target=ball.shoot, args=(int(buffers['ax'][-1]), int(buffers['ay'][-1]), int(buffers['az'][-1]))) 
-        # sio.emit("shoot", {"ax": int(buffers['ax'][-1]), "ay": int(buffers['ay'][-1]), "az": int(buffers['az'][-1])})
+        sio.emit("shoot", {"ax": int(buffers['ax'][-1]), "ay": int(buffers['ay'][-1]), "az": int(buffers['az'][-1])})
         t.start()
         result = t.join()
         print(result)
@@ -106,7 +107,7 @@ def process_data_and_send_response(json_data, buffers, last_values, conn):
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # Reuse TCP socket
     s.bind((HOST, PORT))
     s.listen()
     print("Server starting, located at:", (HOST, PORT))
@@ -137,15 +138,15 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                                 continue
                             elif json_obj.get("level") == "2":
                                 print("2-point shot")
-                                # ball.set_shoot_position(0)
                                 t = threading.Thread(target=ball.set_shoot_position, args=(0,))
+                                sio.emit("level", {"level": 0})
                                 t.start()
                                 t.join()
                                 continue
                             elif json_obj.get("level") == "3":
                                 print("3-point shot")
-                                # ball.set_shoot_position(1)
                                 t = threading.Thread(target=ball.set_shoot_position, args=(1,))
+                                sio.emit("level", {"level": 1})
                                 t.start()
                                 t.join()
                                 continue

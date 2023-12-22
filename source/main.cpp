@@ -66,10 +66,85 @@ this example is not giving better SNR ...
 
 #define MAX_BUFFER_SIZE 30  // 定義數據緩存的最大大小
 
-PwmOut led(D11);
-// DigitalOut led(D9);
-Semaphore ledSemaphore(1); // 初始化信号量，初始计数为1
 
+// LED start
+#define LD1_ON     {led1 = 1;}
+#define LD1_OFF    {led1 = 0;}
+#define LD1_TOG    {led1 = !led1;}
+
+#define LD2_ON     {led2 = 1;}
+#define LD2_OFF    {led2 = 0;}
+#define LD2_TOG    {led2 = !led2;}
+
+#define LD3_ON     {led34.output(); led34 = 1; led3_status = 1;}
+#define LD3_OFF    {led34.input(); led3_status = 0;}
+#define LD3_TOG    {if (led3_status) LD3_OFF else LD3_ON;}
+
+#define LD4_ON     {led34.output(); led34 = 0; led4_status = 1;}
+#define LD4_OFF    {led34.input(); led4_status = 0;}
+#define LD4_TOG    {if (led4_status) LD4_OFF else LD4_ON;}
+#define LED_DELAY 500ms
+
+Semaphore led_sem(1);
+Thread t1;
+Thread t2;
+
+DigitalOut led1(LED1);
+DigitalOut led2(LED2);
+
+// This object drives both LD3 and LD4 on the board.
+// Only one of these LEDs can be driven at a time.
+DigitalInOut led34(LED3);
+InterruptIn button(BUTTON1);
+
+int led3_status = 0;
+int led4_status = 0;
+
+volatile int button_switch = 0;   
+
+void led_thread(void const *name) {
+    while (1) {
+        led_sem.acquire();
+        while (1) {
+            if (*((int*)name) == 1) { 
+                LD1_TOG;
+                ThisThread::sleep_for(LED_DELAY);
+                // printf("led1\n");
+                if(button_switch % 2 == 1)
+                    break;
+            }
+            else if (*((int*)name) == 2) {
+                LD2_TOG;
+                ThisThread::sleep_for(LED_DELAY);
+                // printf("led2\n");
+                if (button_switch % 2 == 0)
+                    break;
+            }
+        }
+        LD1_OFF;
+        LD2_OFF;
+        LD3_OFF;
+        LD4_OFF;
+        led_sem.release();
+    }
+}
+
+void button_pressed()
+{
+    // acts at the first press
+    if (button_switch == -1) {
+        led_sem.release();
+    }
+}
+
+void button_released()
+{
+    ++button_switch;
+}
+// LED end
+
+
+PwmOut buzzer(D11);
 
 extern float32_t testInput_f32_1kHz_15kHz[TEST_LENGTH_SAMPLES];
 extern float32_t refOutput[TEST_LENGTH_SAMPLES];
@@ -115,14 +190,23 @@ public:
     }
 
     void buzzerPWM(){
-        led.period(5.00f); // 4 second period
-        led.write(0.02f); // 50% duty cycle, relative to period
+        buzzer.period(0.1f); // 4 second period
+        buzzer.write(0.0f); // 50% duty cycle, relative to period
     }
 
     void run()
     {
-        Timer periodicTimer;
-        periodicTimer.start();
+        LD1_OFF;
+        LD2_OFF;
+        LD3_ON;
+
+        button.fall(&button_pressed); 
+        button.rise(&button_released); // switch led
+        const int a1 = 1;
+        const int a2 = 2;
+
+        t1.start(callback(led_thread, (void *)&a1));
+        t2.start(callback(led_thread, (void *)&a2));
 
         if (!_net) {
             printf("Error! No network interface found.\r\n");
@@ -197,7 +281,7 @@ public:
             }
             else {
                 printf("Connected successfully.\r\n");
-                // buzzerPWM();
+                LD4_ON;
                 break;
             }
         }
@@ -227,6 +311,7 @@ public:
 
         char acc_json[100];
         int response = 0;
+        int lastLevel = 0;
         double lastDeg = 0;
         int16_t pAccDataXYZ[3] = {0};
         BSP_ACCELERO_Init();
@@ -237,15 +322,6 @@ public:
         const auto heartbeatInterval = 3s;
 
         while (1){
-
-            // if (periodicTimer.elapsed_time() >= 5s) {
-            //     ledSemaphore.acquire(); // 获取信号量
-            //     led = 1;
-            //     ThisThread::sleep_for(500ms);
-            //     led = 0;
-            //     ledSemaphore.release(); // 释放信号量
-            //     periodicTimer.reset();
-            // }
 
             BSP_ACCELERO_AccGetXYZ(pAccDataXYZ);
 
@@ -265,17 +341,23 @@ public:
                 int16_t ax = pAccDataXYZ[0], ay = pAccDataXYZ[1], az = pAccDataXYZ[2];
                 double deg = atan2(sqrt(ax * ax + ay * ay), az) * (180.0 / 3.14);
                 int len = sprintf(acc_json, "{\"ax\":%d,\"ay\":%d,\"az\":%d}", int(outputF32_X*1000), int(outputF32_Y*1000), int(outputF32_Z*1000));
-                // int len = sprintf(acc_json,"{\"ax\":%d,\"ay\":%d,\"az\":%d}", ax, ay, az);
-
                 auto time_elapsed = heartbeatTimer.elapsed_time(); 
                 if (time_elapsed >= heartbeatInterval) {                
                     const char* heartbeatMsg = "{\"type\": \"heartbeat\"}";
-                    int len = strlen(heartbeatMsg);
-                    int sent = _socket.send(heartbeatMsg, len);
+                    int sent = _socket.send(heartbeatMsg, strlen(heartbeatMsg));
                     if (sent <= 0) {
+                        LD3_ON;
                         printf("Failed to send heartbeat\n");
-                    }
+                    } 
                     heartbeatTimer.reset(); 
+                }
+                if (lastLevel != button_switch) {
+                    const char* levelMsg = (int(button_switch)%2) ? "{\"level\": \"3\"}" : "{\"level\": \"2\"}"; 
+                    int sent = _socket.send(levelMsg, strlen(levelMsg));
+                    if (sent <= 0) {
+                        printf("Failed to send level\n");
+                    } 
+                    lastLevel = button_switch;
                 }
 
                 char recv_buffer[10];
@@ -283,6 +365,7 @@ public:
                 if (lastDeg > 120 && deg <= 120){
                     response = _socket.send(acc_json, len);
                     if (0 >= response){
+                        LD3_ON;
                         printf("Error sending: %d\n", response);
 
                         _socket.close(); 
@@ -300,26 +383,39 @@ public:
                             continue;
                         } 
                     } else {
+                        LD4_ON;
                         nsapi_size_or_error_t recv_size = _socket.recv(recv_buffer, sizeof(recv_buffer) - 1);
                         if (recv_size > 0) {
-                            // ledSemaphore.acquire(); // 获取信号量
-                            // led.write(0.00f);
+                            // if (strcmp(recv_buffer, "success") == 0) {
+                            //     buzzer = 1;
+                            //     ThisThread::sleep_for(1000ms);
+                            //     buzzer = 0;
+                            // } else if (strcmp(recv_buffer, "fail") == 0) {
+                            //     for (int i = 0; i < 2; ++i) {
+                            //         buzzer = 1;
+                            //         ThisThread::sleep_for(250ms);
+                            //         buzzer = 0;
+                            //         if (i < 1) {
+                            //             ThisThread::sleep_for(250ms);
+                            //         }
+                            //     }
+                            // }
                             if (strcmp(recv_buffer, "success") == 0) {
-                                led = 1;
+                                buzzer.period(0.02f);
+                                buzzer.write(0.5f); 
                                 ThisThread::sleep_for(1000ms);
-                                led = 0;
+                                buzzer.write(0.0f); 
                             } else if (strcmp(recv_buffer, "fail") == 0) {
                                 for (int i = 0; i < 2; ++i) {
-                                    led = 1;
+                                    buzzer.period(0.01f);
+                                    buzzer.write(0.5f); 
                                     ThisThread::sleep_for(250ms);
-                                    led = 0;
+                                    buzzer.write(0.0f); 
                                     if (i < 1) {
                                         ThisThread::sleep_for(250ms);
                                     }
                                 }
                             }
-                            // led.write(0.10f);
-                            // ledSemaphore.release(); // 释放信号量
                         } else {
                             printf("Failed to receive response or connection closed: %d\n", recv_size);
                         }
