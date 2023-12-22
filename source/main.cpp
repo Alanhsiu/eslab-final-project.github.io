@@ -173,7 +173,7 @@ uint32_t numBlocks = TEST_LENGTH_SAMPLES/BLOCK_SIZE;
 
 // DSP end
 class SocketDemo {
-    static constexpr size_t MAX_NUMBER_OF_ACCESS_POINTS = 10;
+    static constexpr size_t MAX_NUMBER_OF_ACCESS_POINTS = 30;
     static constexpr size_t MAX_MESSAGE_RECEIVED_LENGTH = 200;
     static constexpr size_t REMOTE_PORT = 6666; // CHANGE THIS
 

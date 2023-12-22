@@ -11,8 +11,9 @@ class basketball():
     d_fromboard = 0.23
     boardposition = 1.2
     
+    hoop_radius = 0.4
     backboard = box(pos=vector(0, boardheight+heightadjust, z_boarder+boardposition), size=vector(1.8, 1.2, 0.1), color=color.white)
-    hoop = ring(pos=vector(0, hoopheight+heightadjust, backboard.pos.z+d_fromboard), axis=vector(0, 0.01, 0), radius = 0.6, thickness=0.03, color=color.red)
+    hoop = ring(pos=vector(0, hoopheight+heightadjust, backboard.pos.z+d_fromboard), axis=vector(0, 0.01, 0), radius = hoop_radius, thickness=0.03, color=color.red)
     hoop.pos.z += hoop.radius
     
     # generate the connecting rod
@@ -51,6 +52,10 @@ class basketball():
     ball_radius = 0.12
     basketball = sphere(pos=vector(0, shootheight+heightadjust,  freethrowline.pos.z), radius=ball_radius, color=color.orange, make_trail=False, trail_color=color.white)
     level = 0
+    
+    def set_hoop_radius(self, assignradius):
+        self.hoop_radius = assignradius
+        self.hoop = ring(pos=vector(0, self.hoopheight+self.heightadjust, self.backboard.pos.z+self.d_fromboard), axis=vector(0, 0.01, 0), radius = assignradius, thickness=0.03, color=color.red)
 
     def set_shoot_position(self, assignlevel): # level 0: 2-point shot, level 1: 3-point shot
         dist = self.dist_2_point if assignlevel == 0 else self.dist_3_point
