@@ -78,6 +78,7 @@ Air basketball game developed on STM32L4 Discovery Kit IoT Node.
   - synchronize the tasks
 - scenario
   - use to change led modes to indicate the difficulty level
+  - use keyword `volatile` to prevent the compiler from optimizing the code
 
 #### PWM (Pulse Width Modulation)
 - description
