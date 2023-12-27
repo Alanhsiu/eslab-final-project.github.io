@@ -48,13 +48,13 @@ For better user experience, we also develop a web page to show the result of the
    3.  use your hand to ask a ball to shoot
    4.  the result of the simulation will be shown on the web page
   
-
+## Motivation
 
 ## Technologies Used
 
 #### Websocket
 - description
-  - use TCP/IP protocol
+  - use **TCP/IP protocol**
   - use socket/socketio library
 - purpose
   - communication between STM32 and the server
@@ -72,18 +72,18 @@ For better user experience, we also develop a web page to show the result of the
 
 #### Digital Signal Processing (DSP)
 - description
-  - use CMSIS-DSP library
-  - use `arm_fir_f32` function
+  - use **CMSIS-DSP library**
 - purpose
-  - filter out the noise
+  - filter out the noise of the accelerometer data
 - scenario
-  - get the accelerometer data
+  - get the accelerometer data from the board
 - detail
-  - use the specific low pass filter, which _Nyquist frequency_ is 5Hz and _Cutoff frequency_ is 2.5Hz
+  - use `arm_fir_f32` function
+  - use the specifically designed low pass filter, which _Nyquist frequency_ is 5Hz and _Cutoff frequency_ is 2.5Hz
 
 #### BSP (Board Support Package)
 - description
-  - use BSP library
+  - use **BSP library**
   - use `BSP_ACCELERO_AccGetXYZ` function
 - purpose
   - use the sensors on the board to get the accelerometer data
@@ -99,7 +99,7 @@ For better user experience, we also develop a web page to show the result of the
 
 #### PWM (Pulse Width Modulation)
 - description
-  - use PWM library
+  - use **PWM library**
   - use `pwmout.period` and `pwmout.write` function
 - purpose
   - control the buzzer
@@ -109,7 +109,7 @@ For better user experience, we also develop a web page to show the result of the
 
 #### Multi-threading
 - description
-  - use Thread library
+  - use **Thread library**
   - use `Thread` function
 - purpose
   - run the tasks concurrently
@@ -132,3 +132,9 @@ For better user experience, we also develop a web page to show the result of the
 - Play a song when goal using PWM
   - replace the original buzzer sound (one long beep for goal)
   - play a 3-second song when goal
+
+## Reference
+- Class Slides
+- [STM32L4 Discovery Kit IoT Node](https://os.mbed.com/platforms/ST-Discovery-L475E-IOT01A/)
+- [STM32 Nucleo Driving Buzzer with Notes](https://community.st.com/t5/stm32-mcus-products/stm32-nucleo-driving-buzzer-with-notes/td-p/290164)
+- [python-socketio](https://python-socketio.readthedocs.io/en/stable/)
