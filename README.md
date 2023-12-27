@@ -20,8 +20,11 @@ Air basketball game developed on STM32L4 Discovery Kit IoT Node.
 ├── README.md
 
 ```
+## What is the Project
 
-## How to Run
+
+
+## How to Run the Program
 1. Open Mbed Studio and import the program from URL `https://github.com/ARMmbed/mbed-os-example-sockets`
    1. Set the "use-tls-socket" to false in `mbed_app.json`
    2. Modify the AP's SSID and password in `mbed_app.json`
@@ -99,3 +102,8 @@ Air basketball game developed on STM32L4 Discovery Kit IoT Node.
 - scenario
   - simulate the shooting process
   - set the position of the ball
+
+## New Features (after Demo)
+- Play a song when goal using PWM
+  - replace the original buzzer sound (one long beep for goal)
+  - play a 3-second song when goal
