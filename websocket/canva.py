@@ -14,6 +14,7 @@ class basketball:
     d_fromboard = 0.23
     boardposition = 1.2
 
+    hoop_radius = 0.4
     backboard = box(
         pos=vector(0, boardheight + heightadjust, z_boarder + boardposition),
         size=vector(1.8, 1.2, 0.1),
@@ -22,7 +23,7 @@ class basketball:
     hoop = ring(
         pos=vector(0, hoopheight + heightadjust, backboard.pos.z + d_fromboard),
         axis=vector(0, 0.01, 0),
-        radius=0.4,
+        radius=hoop_radius,
         thickness=0.03,
         color=color.red,
     )
@@ -105,6 +106,20 @@ class basketball:
         trail_color=color.white,
     )
     level = 0
+
+    def set_hoop_radius(self, assignradius):
+        self.hoop_radius = assignradius
+        self.hoop = ring(
+            pos=vector(
+                0,
+                self.hoopheight + self.heightadjust,
+                self.backboard.pos.z + self.d_fromboard,
+            ),
+            axis=vector(0, 0.01, 0),
+            radius=assignradius,
+            thickness=0.03,
+            color=color.red,
+        )
 
     def set_shoot_position(
         self, assignlevel
