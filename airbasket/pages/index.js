@@ -29,11 +29,11 @@ export default function Home() {
   const setMode = useSetting((state) => state.setMode);
   useEffect(() => {
     if (
-      link1_state &&
-      link2_state &&
-      script1_state &&
-      script2_state &&
-      script3_state
+      link1_state === "ready" &&
+      link2_state === "ready" &&
+      script1_state === "ready" &&
+      script2_state === "ready" &&
+      script3_state === "ready"
     ) {
       setReady(true);
     }
