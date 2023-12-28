@@ -8,9 +8,10 @@ export default function Simulation({
   setBucket,
   setFloor,
   mode,
+  level,
 }) {
   useEffect(() => {
-    var radius = mode === "medium" ? 0.23 : mode === "easy" ? 0.4 : 0.16;
+    var radius = mode === "medium" ? 0.4 : mode === "easy" ? 0.6 : 0.16;
 
     if (isStatic) {
       (function () {
@@ -21,32 +22,39 @@ export default function Simulation({
             return __parsearray(this);
           };
           var scene = canvas();
-          scene.background = color.white;
+          scene.background = color.gray(0.1);
           scene.width = 800;
           scene.height = 700;
 
+          var heightadjust = -3;
           // This is written in "callback" or "event-driven" style, in which the
           // function "move" is specified to be "called back" about 200 times per second.
-
-          var heightadjust = -3;
 
           // * Generate basketball court
           var court = box({
             pos: vec(0, heightadjust, 0),
-            size: vec(7.5, 0.1, 7),
+            size: vec(15, 0.1, 14),
             color: color.white,
           });
-          var center = (1)["-u"]()["*"](court.size.z)["/"](2);
+          var z_boarder = -court.size.z / 2;
+          var boardheight = 3.5;
+          var hoopheight = 3.05;
+          var d_fromboard = 0.23;
+          var boardposition = 1.2;
 
           // * Generate basketball hoop and backboar
           var backboard = box({
-            pos: vec(0, 3.5 + heightadjust, center + 1.2),
+            pos: vec(0, boardheight + heightadjust, z_boarder + boardposition),
             size: vec(1.8, 1.2, 0.1),
-            color: color.cyan,
+            color: color.white,
           });
 
           var hoop = ring({
-            pos: vec(0, 3.05 + heightadjust, backboard.pos.z + 0.23),
+            pos: vec(
+              0,
+              hoopheight + heightadjust,
+              backboard.pos.z + d_fromboard
+            ),
             axis: vec(0, 0.01, 0),
             radius: radius,
             thickness: 0.03,
@@ -54,48 +62,93 @@ export default function Simulation({
           });
           hoop.pos.z += hoop.radius;
 
-          //  * Generate paint area
-          var paint1 = box({
-            pos: vec(4.9 / 2 - 0.05, heightadjust, center + 5.8 / 2),
-            size: vec(0.1, 0.1, 5.8),
-            color: color.red,
-            opacity: 1,
-          });
-          var paint2 = box({
-            pos: vec(-4.9 / 2 + 0.05, heightadjust, center + 5.8 / 2),
-            size: vec(0.1, 0.1, 5.8),
-            color: color.red,
-            opacity: 1,
-          });
-          var paint3 = box({
-            pos: vec(0, heightadjust, 5.8 / 2 - 0.05 + center + 5.8 / 2),
-            size: vec(4.9, 0.1, 0.1),
-            color: color.red,
-            opacity: 1,
-          });
-
           // * Generate rod and pillar
           var rod = cylinder({
-            pos: vec(0, 3.05 + heightadjust, backboard.pos.z + 0.05),
+            pos: vec(
+              0,
+              hoopheight + heightadjust,
+              backboard.pos.z + backboard.size.z / 2
+            ),
             axis: vec(0, 0, 0.18),
             radius: 0.03,
             color: color.red,
             opacity: 1,
           });
           var pillar = cylinder({
-            pos: vec(0, heightadjust, backboard.pos.z - 0.2),
+            pos: vec(0, heightadjust, backboard.pos.z),
             axis: vec(0, 3.3, 0),
             radius: 0.2,
             color: color.cyan,
           });
+          pillar.pos.z -= pillar.radius + backboard.size.z / 2;
+
+          //  * Generate paint area
+          var boardthickness = backboard.size.z / 2;
+          var paintlength = 5.8;
+          var paintwidth = 4.57;
+          var paintleft = box({
+            pos: vec(
+              paintwidth / 2,
+              heightadjust,
+              z_boarder + paintlength / 2 + boardposition / 2
+            ),
+            size: vec(0.1, 0.1, paintlength + boardposition),
+            color: color.red,
+            opacity: 1,
+          });
+          var paintright = box({
+            pos: vec(
+              -paintwidth / 2,
+              heightadjust,
+              z_boarder + paintlength / 2 + boardposition / 2
+            ),
+            size: vec(0.1, 0.1, paintlength + boardposition),
+            color: color.red,
+            opacity: 1,
+          });
+          var freethrowline = box({
+            pos: vec(0, heightadjust, paintlength + z_boarder + boardposition),
+            size: vec(paintwidth, 0.1, 0.1),
+            color: color.red,
+            opacity: 1,
+          });
+
+          //  繪製三分線
+          // var three_point_line = curve({ color: color.red, radius: 0.08 });
+          // for (const x of Array(180).keys()) {
+          //   // 繪製半圓形的三分線
+          //   var x = 7.24 * cos(radians(angle));
+          //   var y = heightadjust;
+          //   var z = 7.24 * sin(radians(angle)) + hoop.pos.z;
+          //   three_point_line.push(vec(x, y, z));
+          // }
+
+          // define the distance between the ball and the hoop
+          var dist_2_point = z_boarder + paintlength + boardposition;
+
+          // 三分線的距離
+          var dist_3_point = 7.5 + hoop.pos.z;
+          var shootheight = 1.9;
+          var ball_radius = 0.12;
+          var basketball_pos =
+            level === 0
+              ? vec(0, shootheight + heightadjust, dist_2_point - ball_radius)
+              : vec(0, shootheight + heightadjust, dist_3_point - ball_radius);
+          var basketball_v = level === 0 ? vec(0, 8, -3) : vec(0, 9, -4);
 
           var basketball = sphere({
-            pos: vec(0, 2.1 + heightadjust, 2.9 - 0.12),
-            radius: 0.12,
+            pos: basketball_pos,
+            radius: ball_radius,
             color: color.orange,
             make_trail: false,
           });
-          basketball.mass = 0.62;
+          basketball.velocity = basketball_v;
+          var acc = vec(
+            acceleration[1] * 0.0005,
+            acceleration[2] * -0.0005,
+            acceleration[0] * 0.0005
+          );
+          basketball.velocity = basketball.velocity["+"](acc);
         }
         $(function () {
           window.__context = {
@@ -117,28 +170,35 @@ export default function Simulation({
           scene.width = 800;
           scene.height = 700;
 
+          var heightadjust = -3;
           // This is written in "callback" or "event-driven" style, in which the
           // function "move" is specified to be "called back" about 200 times per second.
-
-          var heightadjust = -3;
 
           // * Generate basketball court
           var court = box({
             pos: vec(0, heightadjust, 0),
-            size: vec(7.5, 0.1, 7),
+            size: vec(15, 0.1, 14),
             color: color.white,
           });
-          var center = (1)["-u"]()["*"](court.size.z)["/"](2);
+          var z_boarder = -court.size.z / 2;
+          var boardheight = 3.5;
+          var hoopheight = 3.05;
+          var d_fromboard = 0.23;
+          var boardposition = 1.2;
 
           // * Generate basketball hoop and backboar
           var backboard = box({
-            pos: vec(0, 3.5 + heightadjust, center + 1.2),
+            pos: vec(0, boardheight + heightadjust, z_boarder + boardposition),
             size: vec(1.8, 1.2, 0.1),
             color: color.white,
           });
 
           var hoop = ring({
-            pos: vec(0, 3.05 + heightadjust, backboard.pos.z + 0.23),
+            pos: vec(
+              0,
+              hoopheight + heightadjust,
+              backboard.pos.z + d_fromboard
+            ),
             axis: vec(0, 0.01, 0),
             radius: radius,
             thickness: 0.03,
@@ -146,54 +206,90 @@ export default function Simulation({
           });
           hoop.pos.z += hoop.radius;
 
-          //  * Generate paint area
-          var paint1 = box({
-            pos: vec(4.9 / 2 - 0.05, heightadjust, center + 5.8 / 2),
-            size: vec(0.1, 0.1, 5.8),
-            color: color.red,
-            opacity: 1,
-          });
-          var paint2 = box({
-            pos: vec(-4.9 / 2 + 0.05, heightadjust, center + 5.8 / 2),
-            size: vec(0.1, 0.1, 5.8),
-            color: color.red,
-            opacity: 1,
-          });
-          var paint3 = box({
-            pos: vec(0, heightadjust, 5.8 / 2 - 0.05 + center + 5.8 / 2),
-            size: vec(4.9, 0.1, 0.1),
-            color: color.red,
-            opacity: 1,
-          });
-
           // * Generate rod and pillar
           var rod = cylinder({
-            pos: vec(0, 3.05 + heightadjust, backboard.pos.z + 0.05),
+            pos: vec(
+              0,
+              hoopheight + heightadjust,
+              backboard.pos.z + backboard.size.z / 2
+            ),
             axis: vec(0, 0, 0.18),
             radius: 0.03,
             color: color.red,
             opacity: 1,
           });
           var pillar = cylinder({
-            pos: vec(0, heightadjust, backboard.pos.z - 0.2),
+            pos: vec(0, heightadjust, backboard.pos.z),
             axis: vec(0, 3.3, 0),
             radius: 0.2,
             color: color.cyan,
           });
+          pillar.pos.z -= pillar.radius + backboard.size.z / 2;
 
+          //  * Generate paint area
+          var boardthickness = backboard.size.z / 2;
+          var paintlength = 5.8;
+          var paintwidth = 4.57;
+          var paint1 = box({
+            pos: vec(
+              paintwidth / 2,
+              heightadjust,
+              z_boarder + paintlength / 2 + boardposition / 2
+            ),
+            size: vec(0.1, 0.1, paintlength + boardposition),
+            color: color.red,
+            opacity: 1,
+          });
+          var paint2 = box({
+            pos: vec(
+              -paintwidth / 2,
+              heightadjust,
+              z_boarder + paintlength / 2 + boardposition / 2
+            ),
+            size: vec(0.1, 0.1, paintlength + boardposition),
+            color: color.red,
+            opacity: 1,
+          });
+          var freethrowline = box({
+            pos: vec(0, heightadjust, paintlength + z_boarder + boardposition),
+            size: vec(paintwidth, 0.1, 0.1),
+            color: color.red,
+            opacity: 1,
+          });
+
+          //  繪製三分線
+          // var three_point_line = curve({ color: color.red, radius: 0.08 });
+          // for (const x of Array(180).keys()) {
+          //   // 繪製半圓形的三分線
+          //   var x = 7.24 * cos(radians(angle));
+          //   var y = heightadjust;
+          //   var z = 7.24 * sin(radians(angle)) + hoop.pos.z;
+          //   three_point_line.push(vec(x, y, z));
+          // }
+          var dist_2_point = z_boarder + paintlength + boardposition;
+
+          // 三分線的距離
+          var dist_3_point = 7.5 + hoop.pos.z;
+          var shootheight = 1.9;
+          var ball_radius = 0.12;
+          var basketball_pos =
+            level === 0
+              ? vec(0, shootheight + heightadjust, dist_2_point - ball_radius)
+              : vec(0, shootheight + heightadjust, dist_3_point - ball_radius);
+          console.log(basketball_pos);
+          var basketball_v = level === 0 ? vec(0, 8, -3) : vec(0, 9, -4);
           var basketball = sphere({
-            pos: vec(0, 2.1 + heightadjust, 2.9 - 0.12),
-            radius: 0.12,
+            pos: basketball_pos,
+            radius: ball_radius,
             color: color.orange,
             make_trail: false,
           });
-          basketball.mass = 0.62;
-          basketball.velocity = vec(0, 7, -3);
-          console.log(acceleration);
+
+          basketball.velocity = basketball_v;
           var acc = vec(
-            acceleration[1] * 0.001,
-            acceleration[2] * -0.001,
-            acceleration[0] * 0.001
+            acceleration[1] * 0.0005,
+            acceleration[2] * -0.0005,
+            acceleration[0] * 0.0005
           );
           basketball.velocity = basketball.velocity["+"](acc);
           var g = vec(0, -9.8, 0);
@@ -208,10 +304,14 @@ export default function Simulation({
           var count = 0;
           var time = 0;
           var ptrHoopToBall, ringOfHoop, ringToBall, nBounce;
-
           while (true) {
             await rate(1 / dt); // execute the move function about 200 times per second
+            scene.camera.pos = basketball.pos["+"](
+              vec(30 * ball_radius, 0, 55 * ball_radius)
+            );
+            scene.camera.axis = vec(-1, 0, -2);
             time += dt;
+
             if (time > maxtime) {
               time = 0;
               basketball.pos = vec(0, 2.1 + heightadjust, 2.9 - 0.12);
@@ -258,6 +358,7 @@ export default function Simulation({
             ) {
               basketball.velocity = basketball.velocity["+"](nBounce["*"](0.2));
             }
+
             var a = vec(basketball.pos.x, 0, basketball.pos.z)["-"](
               vec(hoop.pos.x, 0, hoop.pos.z)
             );
@@ -269,15 +370,10 @@ export default function Simulation({
                 hoop.radius - basketball.radius - hoop.thickness &&
               basketball.velocity.y <= 0
             ) {
-              // TODO: set busket to true
-
               console.log("successful");
               setBucket(true);
             }
 
-            if (basketball.pos.y > maxheight) {
-              maxheight = basketball.pos.y;
-            }
             basketball.velocity = basketball.velocity["+"](g["*"](dt));
 
             // *If the ball is bumped into the ground, bounce
@@ -295,8 +391,10 @@ export default function Simulation({
 
             // * If the ball is bumped into the backboard, bounce
             if (
-              basketball.pos.z <= backboard.pos.z + 0.05 + basketball.radius &&
-              basketball.pos.z >= backboard.pos.z - 0.05 - basketball.radius &&
+              basketball.pos.z <=
+                backboard.pos.z + boardthickness + basketball.radius &&
+              basketball.pos.z >=
+                backboard.pos.z - boardthickness - basketball.radius &&
               basketball.pos.y <= backboard.pos.y + backboard.size.y / 2 &&
               basketball.pos.y >= backboard.pos.y - backboard.size.y / 2 &&
               basketball.velocity.z < 0

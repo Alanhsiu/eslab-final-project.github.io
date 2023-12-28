@@ -1,5 +1,5 @@
 from flask_cors import CORS
-from flask import Flask, render_template
+from flask import Flask, request, jsonify
 from flask_socketio import SocketIO
 import time
 
@@ -24,12 +24,19 @@ def expire():
     return "expire"
 
 
+@app.route("/mode", methods=["POST"])
+def mode():
+    print(request.json)
+    socketio.emit("mode", request.json)
+    return "mode"
+
+
 @app.route("/velocity", methods=["GET"])
 def getVelocity():
     global wait_for_velocity
     wait_for_velocity = True
     print("wait for velocity!")
-    socketio.emit("velocity", [-2000, 0, 1500])
+    # socketio.emit("velocity", [-2000, 0, 1500])
     return "wait for velocity!"
 
 
@@ -48,6 +55,12 @@ def connect():
     print("connected")
 
 
+@socketio.on("level")
+def twothree(data):
+    print("level")
+    socketio.emit("level", data["level"])
+
+
 @socketio.on("shoot")
 def updateVelocity(data):
     global wait_for_velocity
@@ -57,7 +70,8 @@ def updateVelocity(data):
 
     if wait_for_velocity:
         socketio.emit("velocity", velocity)
+        wait_for_velocity = False
 
 
 if __name__ == "__main__":
-    socketio.run(app, use_reloader=False, log_output=False, port=5328, host="127.0.0.1")
+    socketio.run(app, use_reloader=False, log_output=True, port=5328, host="127.0.0.1")

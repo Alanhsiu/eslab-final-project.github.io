@@ -6,10 +6,11 @@ const nextConfig = {
 module.exports = {
   ...nextConfig,
   async rewrites() {
+    console.log(process.env.SERVER_URL);
     return [
       {
         source: "/api/:path*",
-        destination: "https://mighty-numbers-bet.tunnelapp.dev/:path*", // Proxy to Backend
+        destination: `${process.env.NEXT_PUBLIC_SERVER_URL}/:path*`, // Proxy to Backend
       },
     ];
   },

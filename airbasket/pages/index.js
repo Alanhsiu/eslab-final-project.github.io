@@ -40,7 +40,7 @@ export default function Home() {
   }, [link1_state, link2_state, script1_state, script2_state, script3_state]);
 
   return (
-    <div className=" min-h-screen flex flex-col justify-center ">
+    <div className="flex flex-col justify-center min-h-screen ">
       <Head>
         <title>mbed-final</title>
         <meta name="description" content="mbed-final" />
@@ -48,12 +48,12 @@ export default function Home() {
       </Head>
 
       <main className="flex flex-col items-center min-h-full gap-4">
-        <h1 className=" text-4xl">Welcome to Mbed Final - Air Basketball!</h1>
+        <h1 className="text-4xl ">Welcome to Mbed Final - Air Basketball!</h1>
         {/* <FpsCounter /> */}
 
         <div className="flex flex-col items-center">
           <p>Pick handedness</p>
-          <div className="flex-row flex gap-3">
+          <div className="flex flex-row gap-3">
             <div
               className={`hover:bg-slate-400 p-4 rounded-md ${
                 handedness === "right" ? "bg-slate-200" : "bg-inherit"
@@ -81,7 +81,7 @@ export default function Home() {
 
         <div className="flex flex-col items-center">
           <p>Pick Difficulty</p>
-          <div className="flex-row flex gap-3">
+          <div className="flex flex-row gap-3">
             <div
               className={`hover:bg-slate-400 p-4 rounded-md ${
                 mode === "easy" ? "bg-slate-200" : "bg-inherit"
@@ -124,8 +124,8 @@ export default function Home() {
           }`}
         >
           <Link href="/hand-pose-detection">
-            <h2> Hand Detection &rarr;</h2>
-            <p>Hand pose detection by TensorFlow 👋</p>
+            <h2> Start game &rarr;</h2>
+            <p>Fulfill your basketball dream anywhere, anytime! 👋</p>
           </Link>
         </div>
       </main>

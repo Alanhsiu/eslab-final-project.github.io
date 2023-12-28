@@ -32,6 +32,7 @@ export default function HandPoseDetection() {
   const [bucket, setBucket] = useState(false); // * State for ball in the bucket
   const [floor, setFloor] = useState(false); // * State for ball touching the floor
   const [seed, setSeed] = useState(Math.random());
+  const [level, setLevel] = useState(0);
   const { handedness, mode } = useSetting((state) => ({
     handedness: state.handedness,
     mode: state.mode,
@@ -44,8 +45,21 @@ export default function HandPoseDetection() {
     setAcceleration,
     setSeed,
     bucket,
-    setBucket
+    setBucket,
+    level,
+    setLevel
   );
+
+  useEffect(() => {
+    axios
+      .post("/api/mode", { mode: mode })
+      .then((mode) => {
+        console.log("mode", mode);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }, []);
 
   useEffect(() => {
     async function initialize() {
@@ -119,6 +133,7 @@ export default function HandPoseDetection() {
               setBucket={setBucket}
               setFloor={setFloor}
               mode={mode}
+              level={level}
             />
           ) : (
             <></>

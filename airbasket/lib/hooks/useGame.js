@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import io from "socket.io-client";
 
 import axios from "axios";
+import { data } from "jquery";
 export const useGame = (
   isGesture,
   floor,
@@ -9,14 +10,16 @@ export const useGame = (
   setAcceleration,
   restart,
   bucket,
-  setBucket
+  setBucket,
+  level,
+  setLevel
 ) => {
   const [gameState, setGameState] = useState("ready");
-  const [seconds, setSeconds] = useState(40);
+  const [seconds, setSeconds] = useState(360);
   const [score, setScore] = useState(0);
 
   useEffect(() => {
-    const socket = io("https://mighty-numbers-bet.tunnelapp.dev");
+    const socket = io(process.env.NEXT_PUBLIC_SERVER_URL);
     socket.on("connect", () => {
       console.log("connected");
     });
@@ -29,16 +32,18 @@ export const useGame = (
       setGameState("simulation");
       restart(Math.random());
     });
+    socket.on("level", (data) => {
+      console.log(data);
+      setLevel(data);
+    });
 
     // * send request for first velocity
     axios
-      .get("/api/velocity", {
-        headers: { "ngrok-skip-browser-warning": "true" },
-      })
+      .get("/api/velocity")
       .then(function (response) {
-        //   * from ready -> simulation
-        setGameState("simulation");
-        restart(Math.random());
+        // //   * from ready -> simulation
+        // setGameState("simulation");
+        // restart(Math.random());
       })
       .catch(function (error) {
         console.log(error);
@@ -70,7 +75,8 @@ export const useGame = (
           .then(function (response) {
             //   * from ready -> simulation
             console.log(response);
-            setScore(score + 1);
+            if (level === 0) setScore(score + 2);
+            else if (level === 1) setScore(score + 3);
           })
           .catch(function (error) {
             console.log(error);
