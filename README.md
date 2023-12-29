@@ -2,7 +2,7 @@
 
 2023 Fall NTU embedded system lab final project.
 
-- The [Slide](<[https://do](https://docs.google.com/presentation/d/10FJLbdmAahGNAibwFPRSRF8Uz-kPOEbkjXuO1UVXhOI/edit#slide=id.g2a94ed5eb7c_2_174)>) of the project.
+- The [Slide](https://docs.google.com/presentation/d/10FJLbdmAahGNAibwFPRSRF8Uz-kPOEbkjXuO1UVXhOI/edit?usp=sharing) of the project.
 - The [Demo Video](https://youtu.be/WFOLIlUiic4) of the project.
 
 ## Project Structure
