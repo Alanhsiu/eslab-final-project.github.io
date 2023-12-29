@@ -70,6 +70,9 @@ For better user experience, we also develop a web page to show the result of the
 
 ## Motivation
 
+Since every people who love basketball would like to shoot the ball everywhere, as them are the NBA player, and hit the 3-pt shot, so we want to make the dream come true. It can also improve the shooting position and angles.
+
+
 ## Technologies Used
 
 #### Websocket
@@ -144,6 +147,10 @@ For better user experience, we also develop a web page to show the result of the
   - set the position of the ball
 
 #### VPython
+- description
+  - provide a scene to see the movemant of the ball
+- purpose
+  - to simulate the process of shooting the ball and display
 
 #### Next.js
 
