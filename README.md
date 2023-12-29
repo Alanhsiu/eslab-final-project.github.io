@@ -70,7 +70,7 @@ For better user experience, we also develop a web page to show the result of the
 
 ## Motivation
 
-Since every people who love basketball would like to shoot the ball everywhere, as them are the NBA player, and hit the 3-pt shot, so we want to make the dream come true. It can also improve the shooting position and angles.
+Since every people who love basketball would like to shoot the ball everywhere, as if they were NBA players, and hit the 3-pt shot, so we want to make the dream come true. It can also improve the shooting position and angles.
 
 
 ## Technologies Used
