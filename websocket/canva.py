@@ -106,6 +106,21 @@ class basketball:
         trail_color=color.white,
     )
     level = 0
+    
+    # generate a person
+    personHead = sphere(
+        pos=vector(0, shootheight*5/6+heightadjust, basketball.pos.z+0.3), 
+        radius=0.2, 
+        color=color.white
+    )
+    
+    personBody = cone(
+        pos=vector(0, personHead.pos.y-personHead.radius, personHead.pos.z), 
+        axis = vector(0, -(personHead.pos.y-heightadjust-personHead.radius), 0), 
+        radius =0.3, 
+        color=color.white 
+    )
+
 
     def set_hoop_radius(self, assignradius):
         self.hoop_radius = assignradius
