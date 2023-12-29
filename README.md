@@ -188,6 +188,9 @@ Since every people who love basketball would like to shoot the ball everywhere, 
   - replace the original buzzer sound (one long beep for goal)
   - play a 3-second song when goal
 
+- Add a person as a player
+  - ![image](https://github.com/Alanhsiu/eslab-final-project.github.io/assets/91511424/0b6b7f86-7f76-43db-8d91-2d48a6d85825)
+
 ## Reference
 
 - Class Slides
